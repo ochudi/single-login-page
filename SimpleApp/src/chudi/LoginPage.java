@@ -4,6 +4,13 @@
  */
 package chudi;
 
+// import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
+
+
 /**
  *
  * @author chudi
@@ -13,6 +20,12 @@ public class LoginPage extends javax.swing.JFrame {
     /**
      * Creates new form LoginPage
      */
+    
+    Connection con;
+    PreparedStatement pst;
+    ResultSet rs;
+    
+    
     public LoginPage() {
         initComponents();
     }
@@ -69,6 +82,11 @@ public class LoginPage extends javax.swing.JFrame {
         jComboBox1.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Select", "Admin", "Candidate" }));
 
         jButton1.setText("Login");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
 
         jButton2.setText("Cancel");
         jButton2.addActionListener(new java.awt.event.ActionListener() {
@@ -135,9 +153,50 @@ public class LoginPage extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
+        // Cancel Button
         System.exit(0);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // Login Button
+        String username = jTextField1.getText();
+        String password = jPasswordField1.getText();
+        String option = jComboBox1.getSelectedItem().toString();
+        
+        if(username.equals("") || password.equals("") || option.equals("Select")) {
+            JOptionPane.showMessageDialog(rootPane, "Some fields are empty!", "Error", 1);
+        } else {
+            try {
+                con = Connectionz.getConnection();
+                pst = con.prepareStatement("select * from login_table where username=? and password=?");
+                pst.setString(1, username);
+                pst.setString(2, password);
+                rs = pst.executeQuery();
+                
+                if(rs.next()) {
+                    String s1 = rs.getString("options");
+                    String un = rs.getString("username");
+                    
+                    if(option.equalsIgnoreCase("Admin") && s1.equalsIgnoreCase("admin")) {
+                        AdminPage ad = new AdminPage(un);
+                        ad.setVisible(true);
+                        setVisible(false);
+                    }
+                    
+                    if(option.equalsIgnoreCase("Candidate") && s1.equalsIgnoreCase("candidate")) {
+                        CandidatePage cp = new CandidatePage(un);
+                        cp.setVisible(true);
+                        setVisible(false);
+                    }
+                    
+                } else {
+                    JOptionPane.showMessageDialog(rootPane, "Username or Password not matched!", "Login Error", 1);
+                }
+            } catch (Exception e){
+                System.out.println(""+e);
+            }
+        }
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     /**
      * @param args the command line arguments
